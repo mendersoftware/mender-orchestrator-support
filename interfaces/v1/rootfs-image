@@ -1,0 +1,60 @@
+#!/bin/sh
+# Copyright 2024 Northern.tech AS
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+set -e
+
+STATE="$1"
+FILES="$2"
+COMPONENT_TYPE="$3"
+COMPONENT_ID="$4"
+
+# Select between between Mender client 3 and 4
+mender_cli=$(which mender-update || echo mender)
+
+case "$STATE" in
+    NeedsArtifactReboot)
+        echo "Automatic"
+        ;;
+    NeedsUnpackedArtifact)
+        echo "No"
+        ;;
+    SupportsRollback)
+        echo "Yes"
+        ;;
+
+    ArtifactInstall)
+        $mender_cli install "$FILES/files/artifact.mender"
+        ;;
+    ArtifactRollback)
+        # If the ArtifactInstall failed, there is no update in progress
+        $mender_cli rollback || exit 0
+        ;;
+    ArtifactCommit)
+        $mender_cli commit
+        ;;
+
+    Provides)
+        $mender_cli show-provides
+        # Also submit device_type, which is in a separate file, not in the database. We don't know if the
+        # file contains a newline, so it's important that this is done last, to avoid corrupting other
+        # entries.
+        grep '^device_type=' /var/lib/mender/device_type
+        ;;
+
+    Inventory)
+        $mender_cli show-inventory
+        ;;
+
+esac
