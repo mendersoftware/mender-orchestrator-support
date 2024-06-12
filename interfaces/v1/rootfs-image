@@ -53,4 +53,8 @@ case "$STATE" in
         grep '^device_type=' /var/lib/mender/device_type
         ;;
 
+    Inventory)
+        $mender_cli show-inventory
+        ;;
+
 esac
