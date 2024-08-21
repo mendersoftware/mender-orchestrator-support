@@ -20,9 +20,6 @@ FILES="$2"
 COMPONENT_TYPE="$3"
 COMPONENT_ID="$4"
 
-# Select between between Mender client 3 and 4
-mender_cli=$(which mender-update || echo mender)
-
 case "$STATE" in
     NeedsArtifactReboot)
         echo "Automatic"
@@ -34,19 +31,64 @@ case "$STATE" in
         echo "Yes"
         ;;
 
+    Download)
+        name="$(cat $FILES/stream-next)"
+        # There is no stopping after Download_Error. The download stage is not supposed to have any
+        # side effects, so if the download fails, everything is immediately rolled back and cleaned
+        # up. Remaining states below will just return "no update in progress", which we handle.
+        mender-update install --stop-after Download_Leave "$FILES/$name"
+        test -z "$(cat $FILES/stream-next)"
+        ;;
+
     ArtifactInstall)
-        $mender_cli install "$FILES/files/artifact.mender"
+        mender-update resume --stop-after ArtifactInstall_Leave --stop-after ArtifactInstall_Error
         ;;
+
     ArtifactRollback)
-        # If the ArtifactInstall failed, there is no update in progress
-        $mender_cli rollback || exit 0
+        ret=0
+        mender-update rollback --stop-after ArtifactRollback_Leave || ret=$?
+        if [ $ret -eq 2 ]; then
+            # Return code 2 means there is no update in progress, which means that the rollback
+            # already completed.
+            exit 0
+        else
+            exit $ret
+        fi
         ;;
+
+    ArtifactFailure)
+        ret=0
+        mender-update resume --stop-after ArtifactFailure_Leave || ret=$?
+        if [ $ret -eq 2 ]; then
+            # Return code 2 means there is no update in progress, which means that the rollback
+            # already completed.
+            exit 0
+        else
+            exit $ret
+        fi
+        ;;
+
     ArtifactCommit)
-        $mender_cli commit
+        # Stopping after ArtifactCommit is important in order to prevent Cleanup from being
+        # run. This enables us to still roll back.
+        mender-update commit --stop-after ArtifactCommit --stop-after ArtifactCommit_Error
+        ;;
+
+    Cleanup)
+        # Finish up cleanup. Note that this may also run ArtifactCommit_Leave scripts.
+        ret=0
+        mender-update resume || ret=$?
+        if [ $ret -eq 2 ]; then
+            # Return code 2 means there is no update in progress, which means that the rollback
+            # already completed.
+            exit 0
+        else
+            exit $ret
+        fi
         ;;
 
     Provides)
-        $mender_cli show-provides
+        mender-update show-provides
         # Also submit device_type, which is in a separate file, not in the database. We don't know if the
         # file contains a newline, so it's important that this is done last, to avoid corrupting other
         # entries.
@@ -54,7 +96,7 @@ case "$STATE" in
         ;;
 
     Inventory)
-        $mender_cli show-inventory
+        mender-update show-inventory
         ;;
 
 esac
