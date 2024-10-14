@@ -96,7 +96,7 @@ case "$STATE" in
         ;;
 
     Inventory)
-        mender-update show-inventory
+        mender-update show-provides
         ;;
 
 esac
