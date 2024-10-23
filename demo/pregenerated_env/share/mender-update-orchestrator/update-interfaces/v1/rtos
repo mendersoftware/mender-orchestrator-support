@@ -127,9 +127,10 @@ case "$STATE" in
 
 esac
 
-# These are when the CLI is invoked with Provides
+# These are when the CLI is invoked with Provides or Inventory. We just duplicate them here, but
+# they could potentially be different since inventory can have lists.
 
-if [ "$STATE" = "Provides" ]; then
+if [ "$STATE" = "Provides" ] || [ "$STATE" = "Inventory" ]; then
 
     [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
     cat "$INSTANCE_DIR/Provides"
