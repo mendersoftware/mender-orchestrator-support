@@ -29,14 +29,12 @@ log_and_execute ln -s /usr/lib/ssl-3 /usr/lib/ssl
 log_and_execute mkdir /data/mender-update-orchestrator
 log_and_execute ln -s /data/mender-update-orchestrator /var/lib/mender-update-orchestrator
 
-log_and_execute cp orch-install/share/mender/inventory/mender-inventory-orchestrator-inventory /usr/share/mender/inventory/mender-inventory-orchestrator-inventory
-log_and_execute chmod 755 /usr/share/mender/inventory/mender-inventory-orchestrator-inventory
-
-log_and_execute mv orch-install/mock_env/ /data/mender-update-orchestrator/
+log_and_execute cp -r orch-install/mock_env/ /data/mender-update-orchestrator/
 
 # Update interfaces
 log_and_execute export MOCK_DIR=/data/mender-update-orchestrator/mock_env
-log_and_execute mv orch-install/share/mender-update-orchestrator  /usr/share/
+log_and_execute cp -r orch-install/share/mender-update-orchestrator  /usr/share/
+log_and_execute cp -r orch-install/share/mender  /usr/share/
 
 log_and_execute sed -i "s|^INSTANCE_BASE_DIR=.*|INSTANCE_BASE_DIR=$MOCK_DIR/mock_instances|" /usr/share/mender-update-orchestrator/update-interfaces/v1/gateway
 log_and_execute sed -i "s|^INSTANCE_BASE_DIR=.*|INSTANCE_BASE_DIR=$MOCK_DIR/mock_instances|" /usr/share/mender-update-orchestrator/update-interfaces/v1/rtos
