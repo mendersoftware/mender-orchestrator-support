@@ -1,0 +1,12 @@
+api_version: mender/v1
+kind: update_manifest
+version: "system-core-v1"
+component_types:
+  gateway:
+    artifact_path: gateway-v1.mender
+    update_strategy:
+      order: 10
+  rtos:
+    artifact_path: rtos-v1.mender
+    update_strategy:
+      order: 20

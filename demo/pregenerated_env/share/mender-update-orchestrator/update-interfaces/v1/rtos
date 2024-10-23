@@ -1,0 +1,138 @@
+#!/bin/bash
+
+INTERFACE_NAME=$(basename "$0")
+STATE=$1
+FILES=$2
+INSTANCE_TYPE=$3
+INSTANCE_ID=$4
+
+DATA_DIR=${FILES}/data
+HEADER_DIR=${FILES}/header
+
+
+ABS_PATH_THIS_SCRIPT=$(dirname "$(readlink -f "$0")")
+INSTANCE_BASE_DIR=$ABS_PATH_THIS_SCRIPT/../../../../mock_env/mock_instances
+INSTANCE_DIR="$INSTANCE_BASE_DIR/$INSTANCE_ID"
+
+
+function run(){
+    local CMD=$1
+    >&2 echo "Executing: $CMD"
+    eval "$CMD"
+}
+
+function log(){
+    local MSG=$1
+    >&2 echo "##### [$INTERFACE_NAME $INSTANCE_ID] $MSG"
+}
+
+
+function is_cmd_available() {
+    command -v $1 >/dev/null 2>&1 || { log "ERROR: $1 not detected as an executable"; exit 1; }
+}
+
+is_cmd_available jq
+is_cmd_available cat
+
+
+# These are when the CLI is invoked with install
+case "$STATE" in
+
+    Download)
+        NEW_VERSION=$(jq -r '.artifact_provides.version' ${HEADER_DIR}/type-info)
+        log "$STATE [Attempting update to: $NEW_VERSION]"
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+
+        CURRENT_PROVIDES=$(cat "$INSTANCE_DIR/Provides" | grep version)
+        # The #*= in the parameter expansion removes everything before and including the = character
+        CURRENT_VERSION=${CURRENT_PROVIDES#*=}
+
+        TRANSITION_VERSION="$CURRENT_VERSION->$NEW_VERSION"
+
+        echo "$CURRENT_VERSION" > "$INSTANCE_DIR/OldVersionRef"
+        sed -i -n '/device_type/p' "$INSTANCE_DIR/Provides"
+        echo "version=$TRANSITION_VERSION" >> "$INSTANCE_DIR/Provides"
+        echo "$NEW_VERSION" > "$INSTANCE_DIR/NewVersionRef"
+        ;;
+
+    ArtifactInstall)
+        NEW_VERSION=$(jq -r '.artifact_provides.version' ${HEADER_DIR}/type-info)
+        log "$STATE [Attempting update to: $NEW_VERSION]"
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+        ;;
+
+    ArtifactReboot)
+        NEW_VERSION=$(jq -r '.artifact_provides.version' ${HEADER_DIR}/type-info)
+        log "$STATE [Attempting update to: $NEW_VERSION]"
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+        ;;
+
+    NeedsArtifactReboot)
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+
+        NEEDS_ARTIFACT_REBOOT=$(cat "$INSTANCE_DIR/NeedsArtifactReboot")
+
+        log "$STATE [Answer: $NEEDS_ARTIFACT_REBOOT]"
+        echo $NEEDS_ARTIFACT_REBOOT
+        ;;
+
+    NeedsUnpackedArtifact)
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+
+
+        NEEDS_UNPACKED=$(cat "$INSTANCE_DIR/NeedsUnpackedArtifact" 2>/dev/null || echo "No")
+
+        log "$STATE [Answer: $NEEDS_UNPACKED]"
+        echo $NEEDS_UNPACKED
+        ;;
+
+    SupportsRollback)
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+
+        SUPPORTS_ROLLBACK=$(cat "$INSTANCE_DIR/SupportsRollback")
+
+        log "$STATE [Answer: $SUPPORTS_ROLLBACK]"
+        echo $SUPPORTS_ROLLBACK
+        ;;
+
+    ArtifactRollback)
+        ATTEMPTED_UPDATE_VERSION=$(cat "$INSTANCE_DIR/NewVersionRef")
+        OLD_VERSION=$(cat "$INSTANCE_DIR/OldVersionRef")
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+        log "$STATE [Update to $ATTEMPTED_UPDATE_VERSION didn't work. Rolling back to: $OLD_VERSION]"
+        sed -i -n '/device_type/p' "$INSTANCE_DIR/Provides"
+        echo "version=$OLD_VERSION" >> "$INSTANCE_DIR/Provides"
+        ;;
+
+
+    ArtifactCommit)
+        ATTEMPTED_UPDATE_VERSION=$(cat "$INSTANCE_DIR/NewVersionRef")
+        OLD_VERSION=$(cat "$INSTANCE_DIR/OldVersionRef")
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+        log "$STATE [Update to $ATTEMPTED_UPDATE_VERSION worked.]"
+        # On ArtifactCommit, override also version
+        sed -i -n '/device_type/p' "$INSTANCE_DIR/Provides"
+        echo "version=$ATTEMPTED_UPDATE_VERSION" >> "$INSTANCE_DIR/Provides"
+
+        ;;
+
+
+    ArtifactFailure)
+        ATTEMPTED_UPDATE_VERSION=$(cat "$INSTANCE_DIR/NewVersionRef")
+        OLD_VERSION=$(cat "$INSTANCE_DIR/OldVersionRef")
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+        log "$STATE [Update to $ATTEMPTED_UPDATE_VERSION didn't work.]"
+
+        ;;
+
+esac
+
+# These are when the CLI is invoked with Provides
+
+if [ "$STATE" = "Provides" ]; then
+
+    [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+    cat "$INSTANCE_DIR/Provides"
+
+fi
+
