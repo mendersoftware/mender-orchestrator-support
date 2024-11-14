@@ -20,7 +20,7 @@ log_and_execute() {
 
 # MEN-7215: Remove this section (it should be covered by a binary package install).
 # START OF REMOVAL SECTION #####################################################
-log_and_execute mv orch-install/bin/mender-update-orchestrator /usr/bin/
+log_and_execute cp orch-install/bin/mender-update-orchestrator /usr/bin/
 
 # A modification needed to work on QEMU
 # An artifact of doing a manual installation as real installation isn't ready yet
