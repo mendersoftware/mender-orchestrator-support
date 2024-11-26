@@ -38,9 +38,7 @@ log_and_execute export MOCK_DIR=/data/mender-update-orchestrator/mock_env
 log_and_execute cp -r orch-install/share/mender-update-orchestrator  /usr/share/
 log_and_execute cp -r orch-install/share/mender  /usr/share/
 
-log_and_execute sed -i "s|^INSTANCE_BASE_DIR=.*|INSTANCE_BASE_DIR=$MOCK_DIR/mock_instances|" /usr/share/mender-update-orchestrator/update-interfaces/v1/gateway
 log_and_execute sed -i "s|^INSTANCE_BASE_DIR=.*|INSTANCE_BASE_DIR=$MOCK_DIR/mock_instances|" /usr/share/mender-update-orchestrator/update-interfaces/v1/rtos
 
 
-printf "\n\033[1mInstall complete.\033[0m \nPlease export the following env variable: \n\n   MOCK_DIR=/data/mender-update-orchestrator/mock_env \n\n"
-
+printf "\n\033[1mInstall complete.\033[0m"

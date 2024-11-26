@@ -1,14 +1,14 @@
 api_version: mender/v1
 kind: update_manifest
-version: "system-core-v4"
+version: "system-core-v1"
 component_types:
   gateway:
-    artifact_name: gateway-v4
+    artifact_name: gateway-v1
     update_interface: rootfs-image
     update_strategy:
       order: 10
   rtos:
-    artifact_path: rtos-v4.mender
+    artifact_name: rtos-v1
     update_strategy:
       order: 20
 
