@@ -1,13 +1,13 @@
-Mender Orchestrator Update Interfaces
+Mender Orchestrator Interfaces
 =====================================
 
 Mender is an open source over-the-air (OTA) software updater for embedded Linux devices. Mender
 comprises a client running at the embedded device, as well as a server that manages deployments
 across many devices.
 
-This repository contains Update Interfaces for Update Orchestrator, as well as Update Modules and
-Inventory scripts when using the Orchestrator together with the Mender client. Update Orchestrator
-is a Mender Enterprise component responsible for updating the devices in a system.
+This repository contains interfaces for Orchestrator, as well as Update Modules and Inventory
+scripts when using the Orchestrator together with the Mender client. Orchestrator is a Mender
+Enterprise component responsible for updating the devices in a system.
 
 ![Mender logo](https://github.com/mendersoftware/mender/raw/master/mender_logo.png)
 
@@ -35,7 +35,7 @@ documentation](https://github.com/mendersoftware/mender/blob/master/CONTRIBUTING
 
 All files in this repository are licensed under the Apache License, Version 2.0, unless indicated
 otherwise. See
-[LICENSE](https://github.com/mendersoftware/mender-orchestrator-update-interfaces/blob/master/LICENSE)
+[LICENSE](https://github.com/mendersoftware/mender-orchestrator-support/blob/master/LICENSE)
 for the full license text.
 
 ## Connect with us
