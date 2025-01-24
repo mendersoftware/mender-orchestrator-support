@@ -15,4 +15,4 @@
 
 set -e
 
-exec mender-update-orchestrator show-inventory
+exec mender-orchestrator show-inventory

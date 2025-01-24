@@ -42,7 +42,7 @@ case "$STATE" in
         fi
 
         RET=0
-        mender-update-orchestrator \
+        mender-orchestrator \
             install \
             --stop-before ArtifactCommit \
             --stop-before ArtifactRollback \
@@ -70,7 +70,7 @@ case "$STATE" in
         ;;
 
     ArtifactCommit)
-        mender-update-orchestrator \
+        mender-orchestrator \
             resume \
             --stop-before ArtifactRollback \
             --stop-before Cleanup
@@ -78,7 +78,7 @@ case "$STATE" in
 
     ArtifactRollback)
         RET=0
-        mender-update-orchestrator \
+        mender-orchestrator \
             rollback \
             --stop-before Cleanup \
             --exit-on-reboot \
@@ -96,10 +96,9 @@ case "$STATE" in
         ;;
 
     Cleanup)
-        mender-update-orchestrator resume
+        mender-orchestrator resume
         ;;
 
 esac
 
 exit 0
-
