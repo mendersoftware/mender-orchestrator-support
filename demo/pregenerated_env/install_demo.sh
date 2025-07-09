@@ -38,6 +38,11 @@ log_and_execute export MOCK_DIR=/data/mender-orchestrator/mock_env
 log_and_execute cp -r orch-install/share/mender-orchestrator  /usr/share/
 log_and_execute cp -r orch-install/share/mender  /usr/share/
 
+
+# Topology
+mkdir -p /var/lib/mender-orchestrator/manifests
+log_and_execute cp -r orch-install/topology.yaml /var/lib/mender-orchestrator/manifests
+
 log_and_execute sed -i "s|^INSTANCE_BASE_DIR=.*|INSTANCE_BASE_DIR=$MOCK_DIR/mock_instances|" /usr/share/mender-orchestrator/interfaces/v1/rtos
 
 

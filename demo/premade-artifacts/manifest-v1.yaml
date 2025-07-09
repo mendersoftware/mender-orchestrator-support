@@ -1,27 +1,16 @@
-api_version: mender/v1
-kind: update_manifest
-version: "system-core-v1"
+api_version: "mender/v1"
+kind: "manifest"
+name: "system-core-v1"
+system_types_compatible: ["system-core"]
+
+
 component_types:
   gateway:
     artifact_name: gateway-v1
-    update_interface: rootfs-image
     update_strategy:
       order: 10
+
   rtos:
     artifact_name: rtos-v1
     update_strategy:
       order: 20
-
-components:
-  - component_type: gateway
-    id: "G13"
-    args:
-      - arg1
-  - component_type: rtos
-    id: "R456"
-    args:
-      - arg1
-  - component_type: rtos
-    id: "R998"
-    args:
-      - arg1
