@@ -6,11 +6,11 @@ system_types_compatible: ["system-core"]
 
 component_types:
   gateway:
-    artifact_name: gateway-v1
+    artifact_name: gateway-v2
     update_strategy:
       order: 10
 
   rtos:
-    artifact_name: rtos-v2
+    artifact_name: rtos-v3
     update_strategy:
       order: 20
