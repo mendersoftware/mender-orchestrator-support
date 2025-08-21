@@ -1,10 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 INTERFACE_NAME=$(basename "$0")
 STATE=$1
 FILES=$2
 INSTANCE_TYPE=$3
-INSTANCE_ID=$4
+INSTANCE_ID=$4 # From interface_args, defines component's mock env directory.
+# Unrelated to component identity
 
 DATA_DIR=${FILES}/data
 HEADER_DIR=${FILES}/header
@@ -14,19 +15,19 @@ INSTANCE_BASE_DIR=/data/mender-orchestrator/mock-instances
 INSTANCE_DIR="$INSTANCE_BASE_DIR/$INSTANCE_ID"
 
 
-run(){
+function run(){
     local CMD=$1
     >&2 echo "Executing: $CMD"
     eval "$CMD"
 }
 
-log(){
+function log(){
     local MSG=$1
     >&2 echo "##### [$INTERFACE_NAME $INSTANCE_ID] $MSG"
 }
 
 
-is_cmd_available() {
+function is_cmd_available() {
     command -v $1 >/dev/null 2>&1 || { log "ERROR: $1 not detected as an executable"; exit 1; }
 }
 
