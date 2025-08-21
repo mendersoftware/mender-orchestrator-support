@@ -8,6 +8,8 @@ components:
 
   - component_type: rtos
     interface: rtos
+    interface_args: ["1"]
 
   - component_type: rtos
     interface: rtos
+    interface_args: ["2"]
