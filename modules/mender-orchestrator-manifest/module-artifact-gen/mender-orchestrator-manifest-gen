@@ -138,11 +138,11 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
 done
 
 mender-artifact write module-image \
-    -T mender-orchestrator-manifest \
+    --type mender-orchestrator-manifest \
     $system_types \
-    -o $output_path \
-    -n $artifact_name \
-    -f $manifest_file \
+    --output-path $output_path \
+    --artifact-name $artifact_name \
+    --file $manifest_file \
     --software-filesystem data-partition \
     $passthrough_args_modified
 
