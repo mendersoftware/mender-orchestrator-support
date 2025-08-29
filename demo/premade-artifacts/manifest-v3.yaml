@@ -1,6 +1,6 @@
 api_version: "mender/v1"
 kind: "manifest"
-name: "system-core-v2"
+name: "system-core-v3"
 system_types_compatible: ["system-core"]
 
 

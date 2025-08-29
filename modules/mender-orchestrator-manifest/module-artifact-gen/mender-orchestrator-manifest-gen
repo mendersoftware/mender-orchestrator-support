@@ -94,9 +94,9 @@ done
 
 if [ -z "${artifact_name}" ]; then
     # If Artifact name is not specified, grab it from the manifest.
-    artifact_name="$(sed -Ene '/^version:/ { s/^version: *"?//; s/"? *$//; p; };' "${manifest_file}")"
+    artifact_name="$(sed -Ene '/^name:/ { s/^name: *"?//; s/"? *$//; p; };' "${manifest_file}")"
     if [ -z "${artifact_name}" ]; then
-        echo "Artifact name not specified, and no version found in manifest. Aborting."
+        echo "Artifact name not specified, and no name found in manifest. Aborting."
         show_help_and_exit_error
     fi
 fi
@@ -138,11 +138,11 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
 done
 
 mender-artifact write module-image \
-    -T mender-orchestrator-manifest \
+    --type mender-orchestrator-manifest \
     $system_types \
-    -o $output_path \
-    -n $artifact_name \
-    -f $manifest_file \
+    --output-path $output_path \
+    --artifact-name $artifact_name \
+    --file $manifest_file \
     --software-filesystem data-partition \
     $passthrough_args_modified
 
