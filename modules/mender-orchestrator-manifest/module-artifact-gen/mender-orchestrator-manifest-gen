@@ -94,9 +94,9 @@ done
 
 if [ -z "${artifact_name}" ]; then
     # If Artifact name is not specified, grab it from the manifest.
-    artifact_name="$(sed -Ene '/^version:/ { s/^version: *"?//; s/"? *$//; p; };' "${manifest_file}")"
+    artifact_name="$(sed -Ene '/^name:/ { s/^name: *"?//; s/"? *$//; p; };' "${manifest_file}")"
     if [ -z "${artifact_name}" ]; then
-        echo "Artifact name not specified, and no version found in manifest. Aborting."
+        echo "Artifact name not specified, and no name found in manifest. Aborting."
         show_help_and_exit_error
     fi
 fi
