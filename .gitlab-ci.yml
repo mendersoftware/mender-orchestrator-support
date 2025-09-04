@@ -6,3 +6,4 @@ include:
       file:
         - .gitlab-ci-check-commits-signoffs.yml
         - .gitlab-ci-github-status-updates.yml
+        - .gitlab-ci-check-license.yml
