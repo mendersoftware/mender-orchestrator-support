@@ -16,14 +16,14 @@ uninstall: $(UPDATE_INTERFACES_UNINSTALL_TARGETS)
 # Dynamic targets like install-interfaces-v1-rootfs-image
 install-interfaces-v1-%: INTERFACE=$*
 install-interfaces-v1-%:
-	install -m 755 -d $(prefix)$(datadir)/interfaces/v1
-	install -m 755 interfaces/v1/$(INTERFACE) $(prefix)$(datadir)/interfaces/v1/
+	install -m 755 -d $(prefix)$(datadir)/mender-orchestrator/interfaces/v1
+	install -m 755 interfaces/v1/$(INTERFACE) $(prefix)$(datadir)/mender-orchestrator/interfaces/v1/
 
 # Dynamic targets like uninstall-interfaces-v1-rootfs-image
 uninstall-interfaces-v1-%: INTERFACE=$*
 uninstall-interfaces-v1-%:
-	rm -f $(prefix)$(datadir)/interfaces/v1/$(INTERFACE)
-	-rmdir -p $(prefix)$(datadir)/interfaces/v1
+	rm -f $(prefix)$(datadir)/mender-orchestrator/interfaces/v1/$(INTERFACE)
+	-rmdir -p $(prefix)$(datadir)/mender-orchestrator/interfaces/v1
 
 .PHONY: all 
 .PHONY: install
