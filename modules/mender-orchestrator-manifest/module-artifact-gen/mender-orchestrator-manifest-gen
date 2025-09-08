@@ -9,10 +9,10 @@ Simple tool to generate Mender Artifacts that contain Mender Orchestrator manife
 
 Usage: $0 [options] <manifest> [-- [options-for-mender-artifact] ]
 
-    Options: [ -n|artifact-name -t|--device-type -o|--output_path -h|--help ]
+    Options: [ -n|artifact-name -t|--system-type -o|--output_path -h|--help ]
 
         --artifact-name       - Artifact name (if not given it will be taken from the manifest)
-        --device-type         - Target device type identification (can be given more than once)
+        --system-type         - System types compatible with the artifact (can be given more than once)
         --output-path         - Path to output file. Default: orchestrator-manifest.mender
         --help                - Show help and exit
         manifest              - Manifest to bundle in the update
@@ -39,7 +39,7 @@ if ! check_dependency mender-artifact; then
     exit 1
 fi
 
-device_types=""
+system_types=""
 artifact_name=""
 output_path="orchestrator-manifest.mender"
 manifest_file=""
@@ -47,11 +47,11 @@ passthrough_args=""
 
 while [ -n "$1" ]; do
     case "$1" in
-        --device-type | -t)
+        --system-type | -t)
             if [ -z "$2" ]; then
                 show_help_and_exit_error
             fi
-            device_types="$device_types $1 $2"
+            system_types="$system_types -t $2"
             shift 2
             ;;
         --artifact-name | -n)
@@ -94,15 +94,15 @@ done
 
 if [ -z "${artifact_name}" ]; then
     # If Artifact name is not specified, grab it from the manifest.
-    artifact_name="$(sed -Ene '/^version:/ { s/^version: *"?//; s/"? *$//; p; };' "${manifest_file}")"
+    artifact_name="$(sed -Ene '/^name:/ { s/^name: *"?//; s/"? *$//; p; };' "${manifest_file}")"
     if [ -z "${artifact_name}" ]; then
-        echo "Artifact name not specified, and no version found in manifest. Aborting."
+        echo "Artifact name not specified, and no name found in manifest. Aborting."
         show_help_and_exit_error
     fi
 fi
 
-if [ -z "${device_types}" ]; then
-    echo "Device type not specified. Aborting."
+if [ -z "${system_types}" ]; then
+    echo "System type not specified. Aborting."
     show_help_and_exit_error
 fi
 
@@ -138,11 +138,11 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
 done
 
 mender-artifact write module-image \
-    -T mender-orchestrator-manifest \
-    $device_types \
-    -o $output_path \
-    -n $artifact_name \
-    -f $manifest_file \
+    --type mender-orchestrator-manifest \
+    $system_types \
+    --output-path $output_path \
+    --artifact-name $artifact_name \
+    --file $manifest_file \
     --software-filesystem data-partition \
     $passthrough_args_modified
 

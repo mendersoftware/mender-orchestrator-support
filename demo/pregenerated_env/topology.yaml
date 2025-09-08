@@ -1,0 +1,13 @@
+api_version: mender/v1
+kind: topology
+system_type: "system-core"
+
+components:
+  - component_type: gateway
+    interface: rootfs-image
+
+  - component_type: rtos
+    interface: rtos
+
+  - component_type: rtos
+    interface: rtos
