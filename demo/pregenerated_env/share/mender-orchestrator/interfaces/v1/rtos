@@ -4,14 +4,15 @@ INTERFACE_NAME=$(basename "$0")
 STATE=$1
 FILES=$2
 INSTANCE_TYPE=$3
-INSTANCE_ID=$4
+INSTANCE_ID=$4 # From interface_args, defines component's mock env directory.
+# Unrelated to component identity
 
 DATA_DIR=${FILES}/data
 HEADER_DIR=${FILES}/header
 
 
 ABS_PATH_THIS_SCRIPT=$(dirname "$(readlink -f "$0")")
-INSTANCE_BASE_DIR=$ABS_PATH_THIS_SCRIPT/../../../../mock_env/mock_instances
+INSTANCE_BASE_DIR=/data/mender-orchestrator/mock_env/mock_instances
 INSTANCE_DIR="$INSTANCE_BASE_DIR/$INSTANCE_ID"
 
 
@@ -134,6 +135,13 @@ if [ "$STATE" = "Provides" ] || [ "$STATE" = "Inventory" ]; then
 
     [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
     cat "$INSTANCE_DIR/Provides"
+
+fi
+
+if [ "$STATE" = "Identity" ]; then
+
+    [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+    cat "$INSTANCE_DIR/Identity"
 
 fi
 
