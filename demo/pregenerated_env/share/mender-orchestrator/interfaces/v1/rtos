@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 INTERFACE_NAME=$(basename "$0")
 STATE=$1
@@ -15,19 +15,19 @@ INSTANCE_BASE_DIR=$ABS_PATH_THIS_SCRIPT/../../../../mock_env/mock_instances
 INSTANCE_DIR="$INSTANCE_BASE_DIR/$INSTANCE_ID"
 
 
-function run(){
+run(){
     local CMD=$1
     >&2 echo "Executing: $CMD"
     eval "$CMD"
 }
 
-function log(){
+log(){
     local MSG=$1
     >&2 echo "##### [$INTERFACE_NAME $INSTANCE_ID] $MSG"
 }
 
 
-function is_cmd_available() {
+is_cmd_available() {
     command -v $1 >/dev/null 2>&1 || { log "ERROR: $1 not detected as an executable"; exit 1; }
 }
 
