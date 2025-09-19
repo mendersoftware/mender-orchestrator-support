@@ -10,8 +10,7 @@ DATA_DIR=${FILES}/data
 HEADER_DIR=${FILES}/header
 
 
-ABS_PATH_THIS_SCRIPT=$(dirname "$(readlink -f "$0")")
-INSTANCE_BASE_DIR=$ABS_PATH_THIS_SCRIPT/../../../../mock_env/mock_instances
+INSTANCE_BASE_DIR=/data/mender-orchestrator/mock-instances
 INSTANCE_DIR="$INSTANCE_BASE_DIR/$INSTANCE_ID"
 
 
