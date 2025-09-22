@@ -50,8 +50,7 @@ log_and_execute cp -r orch-install/share/mender  /usr/share/
 
 
 # Topology
-mkdir -p /var/lib/mender-orchestrator/manifests
-log_and_execute cp -r orch-install/topology.yaml /var/lib/mender-orchestrator/manifests
+log_and_execute cp -r orch-install/topology.yaml /data/mender-orchestrator/
 
 log_and_execute sed -i "s|^INSTANCE_BASE_DIR=.*|INSTANCE_BASE_DIR=$MOCK_DIR/mock_instances|" /usr/share/mender-orchestrator/interfaces/v1/rtos
 
