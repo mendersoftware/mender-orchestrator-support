@@ -125,6 +125,11 @@ case "$STATE" in
 
         ;;
 
+
+    Identity)
+        [ -f "$INSTANCE_DIR/$STATE.FAIL" ] && { log "Failing $STATE"; exit 1; }
+        cat $INSTANCE_DIR/Identity
+        ;;
 esac
 
 # These are when the CLI is invoked with Provides or Inventory. We just duplicate them here, but
