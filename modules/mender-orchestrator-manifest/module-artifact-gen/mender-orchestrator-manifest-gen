@@ -34,6 +34,30 @@ check_dependency() {
     fi
 }
 
+check_manifest_compatibility() {
+    local manifest_file="$1"
+    local system_types="$2"
+
+    # Manifest file, containing line like:
+    # system_types_compatible: ["system-core", "aaa-bbb", "aaa-bbb2", "text", "010101", "qwe123"]
+    local m_types=$(grep '^system_types_compatible:' $manifest_file | grep -oE '"[^"]+"' | tr -d '"')
+    # system_types from argument list, sample input:
+    # "-t aaa-bbb -t qwe123"
+    local s_types=$(echo $system_types | awk '{for(i=1;i<=NF;i++) if($i=="-t") print $(i+1)}')
+
+    for item in $s_types; do
+        echo $m_types | grep -q "\b$item\b"
+        if [ $? -eq 0 ]; then
+            echo "Found matching system_type: ${item} in manifest entries"
+        else
+            echo "Not matching system_type: ${item} found in the manifest entries" 1>&2
+            exit 1
+        fi
+    done
+
+    echo "All system_type entries found in the manifest"
+}
+
 if ! check_dependency mender-artifact; then
     echo "Please follow the instructions here to install mender-artifact and then try again: https://docs.mender.io/downloads#mender-artifact" 1>&2
     exit 1
@@ -124,6 +148,9 @@ for order in $(sed -n -e 's/^[[:space:]]*order://p' "$manifest_file"); do
         exit 1
     fi
 done
+
+# Ensure `system_types_compatible` matches `system-type`
+check_manifest_compatibility "$manifest_file" "$system_types"
 
 # Check the the passthrough_args and potentially modify them
 # to avoid conflicts or to let them override the already args
