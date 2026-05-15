@@ -58,8 +58,7 @@ case "$STATE" in
         TRANSITION_VERSION="$CURRENT_VERSION->$NEW_VERSION"
 
         echo "$CURRENT_VERSION" > "$INSTANCE_DIR/OldVersionRef"
-        sed -i -n '/device_type/p' "$INSTANCE_DIR/Provides"
-        echo "version=$TRANSITION_VERSION" >> "$INSTANCE_DIR/Provides"
+        echo "version=$TRANSITION_VERSION" > "$INSTANCE_DIR/Provides"
         echo "$NEW_VERSION" > "$INSTANCE_DIR/NewVersionRef"
         
         if [ -f "$INSTANCE_DIR/$STATE.FAIL" ]; then
@@ -122,8 +121,7 @@ case "$STATE" in
             exit 1
         fi
         log "$STATE [Update to $ATTEMPTED_UPDATE_VERSION didn't work. Rolling back to: $OLD_VERSION]"
-        sed -i -n '/device_type/p' "$INSTANCE_DIR/Provides"
-        echo "version=$OLD_VERSION" >> "$INSTANCE_DIR/Provides"
+        echo "version=$OLD_VERSION" > "$INSTANCE_DIR/Provides"
         ;;
 
 
@@ -135,9 +133,8 @@ case "$STATE" in
             exit 1
         fi
         log "$STATE [Update to $ATTEMPTED_UPDATE_VERSION worked.]"
-        # On ArtifactCommit, override also version
-        sed -i -n '/device_type/p' "$INSTANCE_DIR/Provides"
-        echo "version=$ATTEMPTED_UPDATE_VERSION" >> "$INSTANCE_DIR/Provides"
+        # On ArtifactCommit, override version
+        echo "version=$ATTEMPTED_UPDATE_VERSION" > "$INSTANCE_DIR/Provides"
 
         ;;
 

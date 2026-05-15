@@ -21,10 +21,11 @@ mender-artifact \
 The manifest artifacts were created with:
 
 ``` bash
-DEVICE_TYPE="qemux86-64"
+DEVICE_TYPE="gateway"
+VERSION="v1"
 ./mender-orchestrator-manifest-gen \
-    -n manifest-v1 \
-    -o manifest-v1.mender \
+    -n system-core-${VERSION} \
+    -o manifest-${VERSION}.mender \
     -t $DEVICE_TYPE \
-    manifest-v1.yaml
+    manifest-${VERSION}.yaml
 ```
