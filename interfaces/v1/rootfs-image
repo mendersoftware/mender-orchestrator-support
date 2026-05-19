@@ -31,6 +31,11 @@ case "$STATE" in
         ;;
 
     Download)
+        device_type=$(sed -n 's/^device_type\s*=\s*//p' ${MENDER_DATASTORE_DIR:-/var/lib/mender}/device_type)
+        if [ "$device_type" != "$COMPONENT_TYPE" ]; then
+            echo "device_type of the System Device does not match its component_type"
+            exit 1
+        fi
         name="$(cat $FILES/stream-next)"
         # Download can go straight to Cleanup, since it is not supposed to have any side effects. It
         # should not go to ArtifactRollback, but let's have it as a safeguard anyway.
@@ -112,10 +117,6 @@ case "$STATE" in
             echo "$output"
             echo "rootfs-image.version=unknown"
         fi
-        # Also submit device_type, which is in a separate file, not in the database. We don't know if the
-        # file contains a newline, so it's important that this is done last, to avoid corrupting other
-        # entries.
-        grep '^device_type=' ${MENDER_DATASTORE_DIR:-/var/lib/mender}/device_type
         ;;
 
     Inventory)
