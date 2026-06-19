@@ -4,6 +4,6 @@ stages:
 include:
     - project: Northern.tech/Mender/mendertesting
       file:
-        - .gitlab-ci-check-commits-signoffs.yml
         - .gitlab-ci-github-status-updates.yml
         - .gitlab-ci-check-license.yml
+    - component: gitlab.com/Northern.tech/Mender/mendertesting/commit-lint@master
