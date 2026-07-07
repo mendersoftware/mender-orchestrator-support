@@ -42,10 +42,21 @@ case "$STATE" in
         fi
 
         RET=0
+        # --stop-before Cleanup is needed in case the Download state in mender-orchestrator fails
+        # for the lowest order. Without it, orchestrator jumps straight to Cleanup - causing
+        # --stop-before ArtifactRollback to have no effect (it is omitted completely).
+        # Orchestrator finishes the deployment; subsequent calls to it in ArtifactRollback and
+        # Cleanup return with error "nothing to resume", causing mender-update to understand that
+        # the Rollback itself failed.
+        # With --stop-before Cleanup, orchestrator will stop in stop_before_cleanup; when mender
+        # calls it with "rollback --stop-before Cleanup" in ArtifactRollback), orchestrator
+        # will immediately stop again in Cleanup, rendering ArtifactRollback a no-op and correctly
+        # returning a success exit code.
         mender-orchestrator \
             install \
             --stop-before ArtifactCommit \
             --stop-before ArtifactRollback \
+            --stop-before Cleanup \
             --exit-on-reboot \
             "$MANIFEST" \
             || RET=$?
