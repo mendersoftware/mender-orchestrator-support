@@ -40,8 +40,8 @@ check_manifest_compatibility() {
 
     local m_types=$(yq -r '.system_types_compatible[]?' "$manifest_file")
     # system_types from argument list, sample input:
-    # "-t aaa-bbb -t qwe123"
-    local s_types=$(echo $system_types | awk '{for(i=1;i<=NF;i++) if($i=="-t") print $(i+1)}')
+    # "-c aaa-bbb -c qwe123"
+    local s_types=$(echo $system_types | awk '{for(i=1;i<=NF;i++) if($i=="-c") print $(i+1)}')
 
     for item in $s_types; do
         # -F: treat manifest entries as fixed strings, never regular
@@ -82,7 +82,7 @@ while [ -n "$1" ]; do
             if [ -z "$2" ]; then
                 show_help_and_exit_error
             fi
-            system_types="$system_types -t $2"
+            system_types="$system_types -c $2"
             shift 2
             ;;
         --artifact-name | -n)
@@ -175,7 +175,7 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
             -o | --output-path)
                 output_path=$arg
                 ;;
-            -n | --name)
+            -n | --artifact-name)
                 artifact_name=$arg
                 ;;
             *)
@@ -184,6 +184,13 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
         esac
     fi
 done
+
+# Ensure 'name' in the manifest equals `artifact_name` in the artifact
+manifest_name=$(yq -r '.name // ""' "$manifest_file")
+if [ "$manifest_name" != "$artifact_name" ]; then
+    echo "Error: manifest 'name' ('${manifest_name}') must be equal to the artifact name ('${artifact_name}')" 1>&2
+    exit 1
+fi
 
 mender-artifact write module-image \
     --type mender-orchestrator-manifest \
