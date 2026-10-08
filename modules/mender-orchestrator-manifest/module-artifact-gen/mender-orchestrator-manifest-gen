@@ -175,7 +175,7 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
             -o | --output-path)
                 output_path=$arg
                 ;;
-            -n | --name)
+            -n | --artifact-name)
                 artifact_name=$arg
                 ;;
             *)
