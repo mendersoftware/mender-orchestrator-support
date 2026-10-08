@@ -185,6 +185,13 @@ echo -n $passthrough_args | xargs -n 2 printf "%s %s\n" | (while read -r flag ar
     fi
 done
 
+# Ensure 'name' in the manifest equals `artifact_name` in the artifact
+manifest_name=$(yq -r '.name // ""' "$manifest_file")
+if [ "$manifest_name" != "$artifact_name" ]; then
+    echo "Error: manifest 'name' ('${manifest_name}') must be equal to the artifact name ('${artifact_name}')" 1>&2
+    exit 1
+fi
+
 mender-artifact write module-image \
     --type mender-orchestrator-manifest \
     $system_types \
