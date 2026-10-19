@@ -87,19 +87,29 @@ case "$STATE" in
 
     Provides)
         ensure_instance_dir
-        sed "s|^version=|rootfs-image.${INTERFACE_NAME}.version=|" "$INSTANCE_DIR/Provides"
+        cat "$INSTANCE_DIR/Provides"
+        ;;
+    
+    Inventory)
+        ensure_instance_dir
+        version=$(grep "^version=" "$INSTANCE_DIR/Provides")
+        if [ -n "$version" ]; then
+            echo "$version"
+        else
+            echo "version=unknown"
+        fi
         ;;
 
     Download)
         ensure_instance_dir
-        NEW_VERSION=$(jq -r --arg iface "$INTERFACE_NAME" '.artifact_provides.["rootfs-image." + $iface + ".version"]' ${HEADER_DIR}/type-info)
+        NEW_VERSION=$(jq -r '.artifact_provides.version' ${HEADER_DIR}/type-info)
         log "${STATE} [Attempting update to: ${NEW_VERSION}]"
         ;;
 
     ArtifactInstall)
         ensure_instance_dir
         resolve_device
-        NEW_VERSION=$(jq -r --arg iface "$INTERFACE_NAME" '.artifact_provides.["rootfs-image." + $iface + ".version"]' ${HEADER_DIR}/type-info)
+        NEW_VERSION=$(jq -r '.artifact_provides.version' ${HEADER_DIR}/type-info)
         log "${STATE} [Flashing firmware version ${NEW_VERSION} to ${DEVICE_PATH}]"
         
         CURRENT_PROVIDES=$(cat "$INSTANCE_DIR/Provides" | grep version)
