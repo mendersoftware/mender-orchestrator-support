@@ -314,8 +314,8 @@ class Agent:
 
     def _provides_output(self):
         result = run([MENDER_UPDATE_BIN, "show-provides"])
-        if result["exit_code"] != 0 or not result["stdout"]:
-            return b"rootfs-image.version=unknown"
+        if result["exit_code"] != 0:
+            return b""
         return result["stdout"].encode()
 
     def _on_message(self, _client, _userdata, msg):

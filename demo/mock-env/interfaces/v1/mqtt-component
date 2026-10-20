@@ -345,15 +345,29 @@ def main():
         broker = Broker()
         text = broker.read_retained_text(t["provides"], QUERY_TOPIC_TIMEOUT)
         broker.close()
-        # Mandatory key if the Component hasn't reported anything yet, same fallback
-        # rootfs-image uses before any Artifact has ever been installed.
-        print(text if text else "rootfs-image.version=unknown")
+        if text:
+            print(text)
         return 0
 
     if state == "Inventory":
-        # No-op, matching rootfs-image's own Inventory handling exactly. Used only for demo
-        # purposes. Outside of demo, we'd like to have the real inventory from the
+        # Send Provides with version information added.
+        # Outside of demo, we'd like to have the real inventory from the
         # Component's mender-update
+        broker = Broker()
+        text = broker.read_retained_text(t["provides"], QUERY_TOPIC_TIMEOUT)
+        broker.close()
+        # Inventory must expose a plain "version" key, mirroring the rootfs-image.version
+        # Provide the Component reported. Fall back to "unknown" if it hasn't reported one
+        # yet -- same fallback rootfs-image uses before any Artifact has ever been installed.
+        version = "unknown"
+        lines = text.splitlines() if text else []
+        for line in lines:
+            key, sep, value = line.partition("=")
+            if sep and key.strip() == "rootfs-image.version":
+                version = value.strip()
+                break
+        lines.append("version=%s" % version)
+        print("\n".join(lines))
         return 0
 
     if state not in FORWARDED_STATES:
