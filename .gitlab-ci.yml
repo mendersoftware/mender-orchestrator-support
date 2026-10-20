@@ -1,9 +1,17 @@
 stages:
   - test
+  - publish
 
 include:
+    - project: Northern.tech/Mender/mendertesting
+      file:
+        - qa-common/retry.yml
     - project: Northern.tech/Mender/mendertesting
       file:
         - .gitlab-ci-github-status-updates.yml
         - .gitlab-ci-check-license.yml
     - component: gitlab.com/Northern.tech/Mender/mendertesting/commit-lint@master
+    # Release CI/CD components; tags are made by the mender-orchestrator release pipeline
+    - component: gitlab.com/Northern.tech/Mender/mendertesting/release-maintenance-branch@master
+      inputs:
+        github_repo: mendersoftware/mender-orchestrator-support
