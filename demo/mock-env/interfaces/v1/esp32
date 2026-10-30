@@ -11,6 +11,16 @@
 #   $3 = COMPONENT_TYPE
 #   $4 = INSTANCE_ID (from interface_args in topology.yaml)
 #
+# Rollback:
+#   Before flashing, ArtifactInstall reads the flash region that the new
+#   firmware will overwrite off the board and saves it to
+#   ${INSTANCE_DIR}/Backup.bin. The region starts at ESPTOOL_FLASH_OFFSET and
+#   is the size of the new firmware, rounded up to the 4 KiB flash sector,
+#   because esptool erases and writes whole sectors. Flash outside that region
+#   is not changed by the update, so it is not saved.
+#   ArtifactRollback writes Backup.bin back to the same offset. Cleanup
+#   deletes it.
+#
 
 set -e
 
@@ -31,6 +41,9 @@ INSTANCE_DIR="${INSTANCE_BASE_DIR}/${INSTANCE_ID}"
 ESPTOOL_CHIP="esp32s3"
 ESPTOOL_BAUD="460800"
 ESPTOOL_FLASH_OFFSET="0x0"
+FLASH_SECTOR_SIZE=4096
+
+BACKUP_BIN="${INSTANCE_DIR}/Backup.bin"
 
 log() {
     >&2 echo "##### [${INTERFACE_NAME} ${INSTANCE_ID}] $1"
@@ -47,6 +60,15 @@ resolve_device() {
         log "ERROR: No device mapping for instance ${INSTANCE_ID} in ${DEVICE_CONF}"
         exit 1
     fi
+}
+
+# Run esptool.py against this instance's board
+run_esptool() {
+    esptool.py  \
+        --chip "${ESPTOOL_CHIP}" \
+        --port "${DEVICE_PATH}" \
+        --baud "${ESPTOOL_BAUD}" \
+        "$@"
 }
 
 # Ensure the instance state directory exists with initial state
@@ -108,6 +130,10 @@ case "$STATE" in
 
     ArtifactInstall)
         ensure_instance_dir
+        # A backup left by an earlier update that did not reach Cleanup is
+        # not the firmware on the board now. Delete it before any step that
+        # can fail, so ArtifactRollback never writes it.
+        rm -f "${BACKUP_BIN}" "${BACKUP_BIN}.tmp"
         resolve_device
         NEW_VERSION=$(jq -r '.artifact_provides.version' ${HEADER_DIR}/type-info)
         log "${STATE} [Flashing firmware version ${NEW_VERSION} to ${DEVICE_PATH}]"
@@ -135,11 +161,16 @@ case "$STATE" in
         fi
         log "Firmware file: ${FW_BIN}"
 
-        esptool.py  \
-            --chip "${ESPTOOL_CHIP}" \
-            --port "${DEVICE_PATH}" \
-            --baud "${ESPTOOL_BAUD}" \
-            write_flash "${ESPTOOL_FLASH_OFFSET}" "${FW_BIN}"
+        # Save the flash region the new firmware will overwrite, for
+        # ArtifactRollback. A failed read stops the update before the board
+        # is changed.
+        FW_SIZE=$(wc -c < "${FW_BIN}")
+        BACKUP_SIZE=$(( (FW_SIZE + FLASH_SECTOR_SIZE - 1) / FLASH_SECTOR_SIZE * FLASH_SECTOR_SIZE ))
+        log "Saving ${BACKUP_SIZE} bytes of current firmware to ${BACKUP_BIN}"
+        run_esptool read_flash "${ESPTOOL_FLASH_OFFSET}" "${BACKUP_SIZE}" "${BACKUP_BIN}.tmp"
+        mv "${BACKUP_BIN}.tmp" "${BACKUP_BIN}"
+
+        run_esptool write_flash "${ESPTOOL_FLASH_OFFSET}" "${FW_BIN}"
 
         log "Flash complete"
         ;;
@@ -159,8 +190,29 @@ case "$STATE" in
         log "${STATE} [Update to ${NEW_VERSION} failed]"
         ;;
 
+    SupportsRollback)
+        echo "Yes"
+        ;;
+
+    ArtifactRollback)
+        ensure_instance_dir
+        OLD_VERSION=$(cat "${INSTANCE_DIR}/OldVersionRef" 2>/dev/null || echo "unknown")
+        if [ -f "${BACKUP_BIN}" ]; then
+            resolve_device
+            log "${STATE} [Restoring firmware version ${OLD_VERSION} from ${BACKUP_BIN}]"
+            run_esptool write_flash "${ESPTOOL_FLASH_OFFSET}" "${BACKUP_BIN}"
+        else
+            # ArtifactInstall failed before it read the flash, so it did not
+            # write to the board either.
+            log "${STATE} [No backup in ${BACKUP_BIN}, the board was not flashed]"
+        fi
+
+        sed -i '/^version=/d' "${INSTANCE_DIR}/Provides"
+        echo "version=${OLD_VERSION}" >> "${INSTANCE_DIR}/Provides"
+        ;;
+
     Cleanup)
-        # Nothing to clean up
+        rm -f "${BACKUP_BIN}" "${BACKUP_BIN}.tmp"
         ;;
 
     NeedsArtifactReboot)
